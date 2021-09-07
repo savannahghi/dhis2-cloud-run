@@ -1,0 +1,69 @@
+---
+- name: "Start and enable PostgreSQL"
+  service: "name={{ item }} state=started enabled=yes"
+  with_items:
+    - postgresql
+  tags: ["dhis", "postgres"]
+
+- name: "Create app database"
+  postgresql_db:
+    state: present
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+  become: yes
+  become_user: postgres
+  tags: ["dhis", "postgres"]
+
+- name: "Create db user"
+  postgresql_user:
+    state: present
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    db: "{{db_name}}"
+    encrypted: yes
+    role_attr_flags: CREATEDB,CREATEROLE,SUPERUSER,REPLICATION
+  become: yes
+  become_user: postgres
+  tags: ["dhis", "postgres"]
+
+- name: "Grant db user access to app db"
+  postgresql_privs:
+    type: database
+    database: "{{ db_name }}"
+    roles: "{{ db_user }}"
+    grant_option: no
+    privs: all
+  become: yes
+  become_user: postgres
+  tags: ["dhis", "postgres"]
+
+- name: "Allow md5 connection for the db user"
+  postgresql_pg_hba:
+    dest: "/etc/postgresql/{{pg_version}}/main/pg_hba.conf"
+    contype: host
+    databases: all
+    method: md5
+    users: "{{ db_user }}"
+    create: true
+  become: yes
+  become_user: postgres
+  notify: reload postgres
+  tags: ["dhis", "postgres"]
+
+- name: customize postgresql settings
+  template: 
+    src: postgresql.conf
+    dest: "/etc/postgresql/{{pg_version}}/main/postgresql.conf"
+    backup: "yes"
+    force: "yes"
+    owner: postgres
+  become: yes
+  become_user: postgres
+  notify: reload postgres
+  tags: ["dhis", "postgres"]
+
+- name: "Enable PostGis extension"
+  command: psql -U postgres {{ db_name }} -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+  become: yes
+  become_user: postgres
+  tags: ["dhis", "postgres"]
