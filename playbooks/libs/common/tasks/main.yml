@@ -4,13 +4,10 @@
   shell: 'echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" | sudo tee -a /etc/apt/sources.list.d/caddy-fury.list'
   become: yes
 
-- name: Update packages
-  apt: update_cache=yes
+- name: Update and upgrade packages
+  apt: update_cache=yes upgrade=dist
   become: yes
-
-- name: Upgrade packages
-  shell: apt dist-upgrade -y
-  become: yes
+  tags: ["common", "maintenance"]
 
 - name: Set localtime to Africa/Nairobi
   file: state=link src=/usr/share/zoneinfo/Africa/Nairobi dest=/etc/localtime
