@@ -1,0 +1,31 @@
+---
+- name: Install ufw
+  apt: name=ufw state=present
+  become: yes
+
+- name: deny all by default
+  ufw: state=enabled policy=deny
+  become: yes
+
+- name: allow openssh
+  ufw: rule=allow port=22 proto=tcp
+  become: yes
+
+- name: allow HTTPS
+  ufw: rule=allow port=443 proto=tcp
+  become: yes
+
+- name: allow HTTP (only used for HTTPS auto-configuration)
+  ufw: rule=allow port=80 proto=tcp
+  become: yes
+
+- name: connection rate limiting for SSH, 6 connections per address per 30 seconds
+  ufw:
+    rule: limit
+    port: ssh
+    proto: tcp
+  become: yes
+
+- name: enable logging
+  ufw: logging=full
+  become: yes

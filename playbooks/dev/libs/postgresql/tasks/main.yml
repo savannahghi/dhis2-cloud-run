@@ -5,23 +5,23 @@
     - postgresql
   tags: ["dhis", "postgres"]
 
-- name: "Create db user"
-  postgresql_user:
-    state: present
-    name: "{{ db_user }}"
-    password: "{{ db_password }}"
-    # db: "{{db_name}}"
-    encrypted: yes
-    role_attr_flags: CREATEDB,CREATEROLE,SUPERUSER,REPLICATION
-  become: yes
-  become_user: postgres
-  tags: ["dhis", "postgres"]
-
 - name: "Create app database"
   postgresql_db:
     state: present
     name: "{{ db_name }}"
     owner: "{{ db_user }}"
+  become: yes
+  become_user: postgres
+  tags: ["dhis", "postgres"]
+
+- name: "Create db user"
+  postgresql_user:
+    state: present
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    db: "{{db_name}}"
+    encrypted: yes
+    role_attr_flags: CREATEDB,CREATEROLE,SUPERUSER,REPLICATION
   become: yes
   become_user: postgres
   tags: ["dhis", "postgres"]

@@ -1,0 +1,6 @@
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o userknownhostsfile=/dev/null'
+
+[test]
+gateway ansible_host=test.dhis.savannahghi.org ansible_ssh_common_args='-o StrictHostKeyChecking=no -o userknownhostsfile=/dev/null' command_warnings=False
+

@@ -1,0 +1,87 @@
+---
+
+- name: Add Caddy server APT 
+  shell: 'echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" | sudo tee -a /etc/apt/sources.list.d/caddy-fury.list'
+  become: yes
+  
+- name: Add dhis2 stable repository from PPA
+  ansible.builtin.apt_repository:
+    repo: ppa:bobjolliffe/dhis2-tools
+  become: yes
+
+- name: Update and upgrade packages
+  apt: update_cache=yes upgrade=dist
+  become: yes
+  tags: ["common", "maintenance"]
+
+- name: Set localtime to Africa/Nairobi
+  file: state=link src=/usr/share/zoneinfo/Africa/Nairobi dest=/etc/localtime
+  become: yes
+
+- name: Install system and compile dependencies
+  apt: name={{ item }} state=latest
+  become: yes
+  with_items:
+    - build-essential
+    - tmux
+    - htop
+    - nano
+    - vim
+    - ntp
+    - logrotate
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg-agent
+    - software-properties-common
+    - python3-pip
+    - python-pip
+    - python3-setuptools
+    - python-setuptools
+    - python-dev
+    - python3-dev
+    - python-psycopg2
+    - python3-psycopg2
+    - python-ipaddress
+    - openssh-server
+    - caddy
+    - sshpass
+    - dhis2-tools
+    - postgresql-10
+    - postgresql-client-10
+    - postgresql-contrib-10
+    - postgresql-10-postgis-2.4
+    - libpq-dev
+    - libssl-dev
+    - openjdk-8-jdk
+    - tomcat9-user
+  tags: ["deploy", "dhis"]
+
+- name: Overwrite default tmux config and issue files
+  template: src={{item.src}} dest={{item.dest}}
+  become: yes
+  with_items:
+    - {src: issue, dest: /etc/issue}
+    - {src: tmux.conf, dest: /etc/tmux.conf}
+
+- name: Add shared deploy group
+  group: name={{deploy_group}} state=present
+  become: yes
+
+- name: Add the ansible and root user to the deploy group
+  user: name={{item}} groups={{deploy_group}} append=yes
+  become: yes
+  with_items:
+      - root
+      - "{{deploy_user}}"
+      - "{{dhis_user}}"
+  tags: ["deploy", "dhis"]
+
+- name: Make the deploy user a dhis-2 admin user
+  shell: 'sudo dhis2-create-admin {{item}}'
+  become: yes
+  with_items:
+    - root
+    - "{{deploy_user}}"
+    - "{{dhis_user}}"
+  tags: ["deploy", "dhis"]

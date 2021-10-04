@@ -1,0 +1,5 @@
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o userknownhostsfile=/dev/null'
+
+[prod]
+gateway ansible_host=fahari.dhis2.savannahghi.org ansible_ssh_common_args='-o StrictHostKeyChecking=no -o userknownhostsfile=/dev/null' command_warnings=False

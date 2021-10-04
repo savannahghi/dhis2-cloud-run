@@ -1,3 +1,8 @@
-playbooks/ssh.cfg
-playbooks/inventory
-playbooks/ansible.cfg
+playbooks/dev/ssh.cfg
+playbooks/dev/inventory
+playbooks/dev/ansible.cfg
+
+playbooks/prod/ssh.cfg
+playbooks/prod/inventory
+playbooks/prod/ansible.cfg
+
