@@ -20,6 +20,13 @@
   become: yes
   tags: ["deploy", "dhis", "dhis_home"]
 
+
+- name: Create users' config directory
+  file:
+    path: /home/{{dhis_user}}/config/
+    state: directory
+  become: yes
+
 # TODO PR, release; include ssh.cfg and inventory not being committed or being encrypted
 
 - name: create dhis.conf file

@@ -3,6 +3,11 @@
 - name: Add Caddy server APT 
   shell: 'echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" | sudo tee -a /etc/apt/sources.list.d/caddy-fury.list'
   become: yes
+  
+- name: Add dhis2 stable repository from PPA
+  ansible.builtin.apt_repository:
+    repo: ppa:bobjolliffe/dhis2-tools
+  become: yes
 
 - name: Update and upgrade packages
   apt: update_cache=yes upgrade=dist
