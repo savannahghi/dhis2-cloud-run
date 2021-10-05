@@ -12,7 +12,7 @@ To prepare a new server, the only commands you need to run manually are:
 > locale-gen en_US.UTF-8
 ```
 
-After that, ensure that you have an `ssh.cfg`, `ansible.cfg` and `inventory` in the playbooks folder that allows you reach the machines you are deploying on.
+After that, ensure that you have an `ssh.cfg`, `ansible.cfg` and `inventory` in the playbooks dev and prod folder that allows you reach the machines you are deploying on.
 
 An example `ssh.cfg`:
 
@@ -61,8 +61,12 @@ ssh_args = -F ./ssh.cfg -o ControlMaster=auto -o ControlPersist=1800s
 
 Secrets are encrypted using Ansible Vault. The encrypted secrets include variables and service account files.
 
+Common vars are declared in dev/group_vars/all or prod/group_vars/all directory and simlinked to the common_env_vars file in the playbooks directory.
+i.e;
+playbbooks/dev/group_vars/all$ ln -s ../../../common_env_vars
+
 ```bash
-> cd playbooks
+> cd playbooks/dev || cd playbooks/prod
 > ansible-playbook -iinventory dhis2.yml --vault-id=~/.vaultpass
 ```
 

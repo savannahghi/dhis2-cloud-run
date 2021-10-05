@@ -8,14 +8,14 @@
 
 - name: Add the dhis user
   ansible.builtin.user:
-    name: "{{dhis_user}}"
+    name: "{{test_dhis_user}}"
     shell: /bin/bash
     groups: "{{deploy_group}}"
     append: yes
     create_home: yes
-    home: /home/{{dhis_user}}
+    home: /home/{{test_dhis_user}}
     state: present
-    password: "{{dhis_password}}"
+    password: "{{test_dhis_password}}"
     update_password: always
   become: yes
   tags: ["deploy", "dhis", "dhis_home"]
@@ -23,7 +23,7 @@
 
 - name: Create users' config directory
   file:
-    path: /home/{{dhis_user}}/config/
+    path: /home/{{test_dhis_user}}/config/
     state: directory
   become: yes
 
@@ -32,7 +32,7 @@
 - name: create dhis.conf file
   template: 
     src: dhis.conf
-    dest: "/home/{{dhis_user}}/config/dhis.conf"
+    dest: "/home/{{test_dhis_user}}/config/dhis.conf"
     backup: "yes"
     force: "yes"
     owner: "{{deploy_user}}"
@@ -45,79 +45,79 @@
   become: yes
   with_items:
     - "locale-gen en_US.UTF-8"
-    - "mkdir -p /home/{{dhis_user}}/config"
-    - "chown -R {{dhis_user}} /home/{{dhis_user}}"
-    - "chmod 0600 /home/{{dhis_user}}/config/dhis.conf"
-    - chown {{dhis_user}} /home/{{dhis_user}}/config/dhis.conf
+    - "mkdir -p /home/{{test_dhis_user}}/config"
+    - "chown -R {{test_dhis_user}} /home/{{test_dhis_user}}"
+    - "chmod 0600 /home/{{test_dhis_user}}/config/dhis.conf"
+    - chown {{test_dhis_user}} /home/{{test_dhis_user}}/config/dhis.conf
   tags: ["deploy", "dhis", "dhis_home"]
 
 - name: set up tomcat folder for DHIS 2
   shell: '{{item}}'
   become: yes
-  become_user: "{{dhis_user}}"
+  become_user: "{{test_dhis_user}}"
   with_items:
-    - cd /home/{{dhis_user}} && tomcat9-instance-create {{dhis_user}} -p {{dhis_port}}
+    - cd /home/{{test_dhis_user}} && tomcat9-instance-create {{test_dhis_user}} -p {{test_dhis_port}}
   ignore_errors: yes
   tags: ["deploy", "dhis", "dhis_home"]
 
 - name: deploy the WAR files
   shell: '{{item}}'
   become: yes
-  become_user: "{{dhis_user}}"
+  become_user: "{{test_dhis_user}}"
   with_items:
-    - wget {{dhis_war_url}} -O /home/{{dhis_user}}/{{dhis_user}}.war
-    - cd /home/{{dhis_user}} && mv dhis.war {{dhis_user}}/webapps/ROOT.war
+    - wget {{test_dhis_war_url}} -O /home/{{test_dhis_user}}/{{test_dhis_user}}.war
+    - cd /home/{{test_dhis_user}} && mv dhis.war {{test_dhis_user}}/webapps/ROOT.war
   tags: ["deploy", "dhis", "dhis_home"]
 
 - name: copy the setenv.sh script
   template: 
     src: setenv.sh
-    dest: "/home/{{dhis_user}}/{{dhis_user}}/bin/setenv.sh"
+    dest: "/home/{{test_dhis_user}}/{{test_dhis_user}}/bin/setenv.sh"
     backup: "yes"
     force: "yes"
-    owner: "{{dhis_user}}"
+    owner: "{{test_dhis_user}}"
     group: "{{deploy_group}}"
     mode: u=rwx,g=rwx,o=rx
   become: yes
-  become_user: "{{dhis_user}}"
+  become_user: "{{test_dhis_user}}"
   tags: ["deploy", "dhis", "dhis_home", "systemd"]
 
 - name: copy the startup.sh script
   template: 
     src: startup.sh
-    dest: "/home/{{dhis_user}}/{{dhis_user}}/bin/startup.sh"
+    dest: "/home/{{test_dhis_user}}/{{test_dhis_user}}/bin/startup.sh"
     backup: "yes"
     force: "yes"
-    owner: "{{dhis_user}}"
+    owner: "{{test_dhis_user}}"
     group: "{{deploy_group}}"
     mode: u=rwx,g=rwx,o=rx
   become: yes
-  become_user: "{{dhis_user}}"
+  become_user: "{{test_dhis_user}}"
   tags: ["deploy", "dhis", "dhis_home", "systemd"]
 
 - name: copy the shutdown.sh script
   template: 
     src: shutdown.sh
-    dest: "/home/{{dhis_user}}/{{dhis_user}}/bin/shutdown.sh"
+    dest: "/home/{{test_dhis_user}}/{{test_dhis_user}}/bin/shutdown.sh"
     backup: "yes"
     force: "yes"
-    owner: "{{dhis_user}}"
+    owner: "{{test_dhis_user}}"
     group: "{{deploy_group}}"
     mode: u=rwx,g=rwx,o=rx
   become: yes
-  become_user: "{{dhis_user}}"
+  become_user: "{{test_dhis_user}}"
   tags: ["deploy", "dhis", "dhis_home", "systemd"]
 
 - name: copy the server.xml configuration
   template: 
     src: server.xml
-    dest: "/home/{{dhis_user}}/{{dhis_user}}/conf/server.xml"
+    dest: "/home/{{test_dhis_user}}/{{test_dhis_user}}/conf/server.xml"
     backup: "yes"
     force: "yes"
-    owner: "{{dhis_user}}"
+    owner: "{{test_dhis_user}}"
     group: "{{deploy_group}}"
   become: yes
-  become_user: "{{dhis_user}}"
+  become_user: "{{test_dhis_user}}"
   tags: ["deploy", "dhis", "dhis_home"]
 
 - name: create dhis systemd service file
@@ -177,10 +177,10 @@
 - name: Copy service account file
   ansible.builtin.copy: 
     src: "{{playbook_dir}}/roles/dhis2/templates/dhis-google-auth.json"
-    dest: "/home/{{dhis_user}}/config/dhis-google-auth.json"
+    dest: "/home/{{test_dhis_user}}/config/dhis-google-auth.json"
     backup: "yes"
     force: "yes"
-    owner: "{{dhis_user}}"
+    owner: "{{test_dhis_user}}"
     group: "{{deploy_group}}"
     mode: u=rw,g=r,o=r
   become: yes
