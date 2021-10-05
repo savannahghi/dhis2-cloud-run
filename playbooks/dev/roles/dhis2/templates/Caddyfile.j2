@@ -1,4 +1,4 @@
-https://{{host_domain}} {
+https://{{test_host_domain}} {
     reverse_proxy 127.0.0.1:8080
     log {
         output file /var/log/caddy/caddy.https.log {
@@ -11,7 +11,7 @@ https://{{host_domain}} {
     }
 }
 
-http://{{host_domain}} {
+http://{{test_host_domain}} {
     log {
         output file /var/log/caddy/caddy.http.log {
             roll_size     10MiB

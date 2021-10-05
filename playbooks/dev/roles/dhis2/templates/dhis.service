@@ -5,11 +5,11 @@ After=network-online.target
 
 [Service]
 Type=forking
-User={{dhis_user}}
+User={{test_dhis_user}}
 Group={{deploy_group}}
-WorkingDirectory=/home/{{dhis_user}}/{{dhis_user}}/bin
-ExecStart=/home/{{dhis_user}}/{{dhis_user}}/bin/startup.sh
-ExecStop=/home/{{dhis_user}}/{{dhis_user}}/bin/shutdown.sh
+WorkingDirectory=/home/{{test_dhis_user}}/{{test_dhis_user}}/bin
+ExecStart=/home/{{test_dhis_user}}/{{test_dhis_user}}/bin/startup.sh
+ExecStop=/home/{{test_dhis_user}}/{{test_dhis_user}}/bin/shutdown.sh
 Restart=always
 
 [Install]
