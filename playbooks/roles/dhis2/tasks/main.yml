@@ -6,7 +6,7 @@
   args:
     warn: no
 
-- name: Add the dhis user
+- name: add the dhis user
   ansible.builtin.user:
     name: "{{dhis_user}}"
     shell: /bin/bash
@@ -20,7 +20,14 @@
   become: yes
   tags: ["deploy", "dhis", "dhis_home"]
 
-# TODO PR, release; include ssh.cfg and inventory not being committed or being encrypted
+- name: create dhis2 config directory
+  file:
+    path: "/home/{{dhis_user}}/config"
+    state: directory
+    owner: "{{dhis_user}}"
+    group: "{{deploy_group}}"
+  become: yes
+  tags: ["deploy", "dhis"]
 
 - name: create dhis.conf file
   template: 
@@ -28,8 +35,8 @@
     dest: "/home/{{dhis_user}}/config/dhis.conf"
     backup: "yes"
     force: "yes"
-    owner: "{{deploy_user}}"
-    group: "{{deploy_user}}"
+    owner: "{{dhis_user}}"
+    group: "{{deploy_group}}"
   become: yes
   tags: ["deploy", "dhis"]
 
