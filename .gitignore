@@ -1,3 +1,4 @@
 playbooks/ssh.cfg
 playbooks/inventory
 playbooks/ansible.cfg
+db_backup_update/local_env_vars.sh
