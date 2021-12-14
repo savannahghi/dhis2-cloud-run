@@ -70,5 +70,5 @@ The decryption password (contents of `~/.vaultpass`) will be communicated to you
 
 ## update test instance with prod db
 - cd playbooks
-- ansible-playbook -i inventory backup_restore.yml --vault-id=~/.vaultpass
+- ansible-playbook -i inventory backup_restore.yml --vault-id=~/.vaultpass --ask-become-pass
 

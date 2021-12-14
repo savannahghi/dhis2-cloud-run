@@ -1,6 +1,8 @@
 ---
 - hosts: all
   become: yes
+  vars:
+    temp_dir: "/home/{{ lookup('env', 'USER')  }}/temp_dir/"
   tasks:
     - name: "Set timestamp for the backup"
       set_fact:
@@ -26,7 +28,7 @@
       when: inventory_hostname in groups['prod']
       fetch:
         src: "/home/{{ dhis_user }}/db_copy/{{ now }}/{{ db_name }}.dump.gz"
-        dest: "~/temp_dir/prod_db_copy/{{ now }}/"
+        dest: "/home/{{ lookup('env', 'USER') }}/temp_dir/prod_db_copy/{{ now }}/"
         flat: yes
 
     - name: "Copy the dump file to the test instance"
@@ -81,4 +83,21 @@
         target: "/home/{{dhis_user}}/prod_db_copy/{{ now }}/{{ db_name }}.dump.gz"
       become_user: postgres
 
+    - name: "Cleanup temp data from prod server"
+      when: inventory_hostname in groups['prod']
+      file:
+        path: "/home/{{ dhis_user }}/db_copy"
+        state: absent
+
+
+    - name: "Cleanup temp data from test server"
+      when: inventory_hostname in groups['test']
+      file:
+        path: "/home/{{ dhis_user }}/prod_db_copy"
+        state: absent
+
+    - name: "Cleanup temp data on the local machine"
+      shell:
+        "rm -rf {{ temp_dir }}"
+      delegate_to: localhost
 
