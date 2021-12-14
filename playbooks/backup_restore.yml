@@ -37,6 +37,7 @@
 
 
     - name: "Restart test postgresql:bypass db in use error"
+      when: inventory_hostname in groups['test']
       service:
         name: postgresql
         state: restarted
