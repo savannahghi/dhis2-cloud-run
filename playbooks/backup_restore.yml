@@ -35,12 +35,18 @@
         src: "~/temp_dir/prod_db_copy/{{ now }}/{{ db_name }}.dump.gz"
         dest: "/home/{{ dhis_user }}/prod_db_copy/{{ now }}/"
 
+
+    - name: "Restart test postgresql:bypass db in use error"
+      service:
+        name: postgresql
+        state: restarted
+        enabled: yes
+
     - name: "Drop test server db"
       when: inventory_hostname in groups['test']
       postgresql_db:
         name: "{{db_name}}"
         state: absent
-        force: yes
       become_user: postgres
 
     - name: "Re-create test database"
