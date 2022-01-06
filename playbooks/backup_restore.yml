@@ -1,0 +1,103 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    temp_dir: "/home/{{ lookup('env', 'USER')  }}/temp_dir/"
+  tasks:
+    - name: "Set timestamp for the backup"
+      set_fact:
+        now: "{{ lookup('pipe', 'date +%F-%T') }}"
+
+    - name: "Create a backup directory on prod server"
+      when: inventory_hostname in groups['prod']
+      file:
+        path: "/home/{{ dhis_user }}/db_copy/{{ now }}/"
+        mode: 0777
+        owner: "{{ dhis_user }}"
+        state: directory
+
+    - name: "Create dump file of prod database"
+      when: inventory_hostname in groups['prod']
+      postgresql_db:
+        state: dump
+        name: "{{ db_name }}"
+        target: "/home/{{ dhis_user }}/db_copy/{{ now }}/{{ db_name }}.dump.gz"
+      become_user: postgres
+    
+    - name: "Copy the dump file to local machine"
+      when: inventory_hostname in groups['prod']
+      fetch:
+        src: "/home/{{ dhis_user }}/db_copy/{{ now }}/{{ db_name }}.dump.gz"
+        dest: "/home/{{ lookup('env', 'USER') }}/temp_dir/prod_db_copy/{{ now }}/"
+        flat: yes
+
+    - name: "Copy the dump file to the test instance"
+      when: inventory_hostname in groups['test']
+      copy:
+        src: "~/temp_dir/prod_db_copy/{{ now }}/{{ db_name }}.dump.gz"
+        dest: "/home/{{ dhis_user }}/prod_db_copy/{{ now }}/"
+
+
+    - name: "Restart test postgresql:bypass db in use error"
+      when: inventory_hostname in groups['test']
+      service:
+        name: postgresql
+        state: restarted
+        enabled: yes
+
+    - name: "Drop test server db"
+      when: inventory_hostname in groups['test']
+      postgresql_db:
+        name: "{{db_name}}"
+        state: absent
+      become_user: postgres
+
+    - name: "Re-create test database"
+      when: inventory_hostname in groups['test']
+      postgresql_db:
+        state: present
+        name: "{{ db_name }}"
+      become_user: postgres
+
+    - name: "Change database ownership to dhis_user"
+      when: inventory_hostname in groups['test']
+      postgresql_owner:
+        db: "{{ db_name }}"
+        new_owner: "{{ dhis_user }}"
+        obj_type: database
+      become_user: postgres
+
+    - name: "Grant all privileges to dhis_user"
+      postgresql_privs:
+        type: database
+        database: "{{ db_name }}"
+        roles: "{{ dhis_user }}"
+        privs: all
+      become_user: postgres
+
+    - name: "Restore test db with prod database"
+      when: inventory_hostname in groups['test']
+      postgresql_db:
+        state: restore
+        name: "{{db_name}}"
+        target: "/home/{{dhis_user}}/prod_db_copy/{{ now }}/{{ db_name }}.dump.gz"
+      become_user: postgres
+
+    - name: "Cleanup temp data from prod server"
+      when: inventory_hostname in groups['prod']
+      file:
+        path: "/home/{{ dhis_user }}/db_copy"
+        state: absent
+
+
+    - name: "Cleanup temp data from test server"
+      when: inventory_hostname in groups['test']
+      file:
+        path: "/home/{{ dhis_user }}/prod_db_copy"
+        state: absent
+
+    - name: "Cleanup temp data on the local machine"
+      shell:
+        "rm -rf {{ temp_dir }}"
+      delegate_to: localhost
+
