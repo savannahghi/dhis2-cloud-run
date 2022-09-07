@@ -1,3 +1,5 @@
 playbooks/ssh.cfg
 playbooks/inventory
 playbooks/ansible.cfg
+
+.todo.md
